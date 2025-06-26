@@ -1,0 +1,69 @@
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+
+local localPlayer = Players.LocalPlayer
+
+-- الأجزاء التي نريد عرض ESP عليها
+local rigParts = {
+	"Head", "Torso", "HumanoidRootPart", -- R6
+	"UpperTorso", "LowerTorso",          -- R15
+	"LeftArm", "RightArm", "LeftLeg", "RightLeg", -- R6
+	"LeftUpperArm", "LeftLowerArm", "LeftHand",
+	"RightUpperArm", "RightLowerArm", "RightHand",
+	"LeftUpperLeg", "LeftLowerLeg", "LeftFoot",
+	"RightUpperLeg", "RightLowerLeg", "RightFoot"
+}
+
+-- وظيفة لصنع مربع على الجزء
+local function createESPPart(part)
+	if part:FindFirstChild("ESPBox") then return end
+
+	local box = Instance.new("BoxHandleAdornment")
+	box.Name = "ESPBox"
+	box.Adornee = part
+	box.AlwaysOnTop = true
+	box.ZIndex = 5
+	box.Size = part.Size
+	box.Transparency = 0.5
+	box.Color3 = Color3.fromRGB(0, 255, 0) -- أخضر
+	box.Parent = part
+end
+
+-- تطبيق ESP على شخصية اللاعب
+local function applyESP(character)
+	for _, partName in ipairs(rigParts) do
+		local part = character:FindFirstChild(partName)
+		if part and part:IsA("BasePart") then
+			createESPPart(part)
+		end
+	end
+
+	-- إذا تمت إضافة أجزاء جديدة
+	character.ChildAdded:Connect(function(part)
+		if table.find(rigParts, part.Name) and part:IsA("BasePart") then
+			createESPPart(part)
+		end
+	end)
+end
+
+-- عند دخول لاعب جديد أو إعادة ظهوره
+local function onPlayerAdded(player)
+	if player == localPlayer then return end
+
+	player.CharacterAdded:Connect(function(character)
+		applyESP(character)
+	end)
+
+	-- لو كان اللاعب عنده شخصية حالياً
+	if player.Character then
+		applyESP(player.Character)
+	end
+end
+
+-- تطبيقه على كل اللاعبين الحاليين
+for _, player in ipairs(Players:GetPlayers()) do
+	onPlayerAdded(player)
+end
+
+-- لاعبين جدد
+Players.PlayerAdded:Connect(onPlayerAdded)
