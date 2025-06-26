@@ -8,16 +8,13 @@ local function setWalkSpeed(speed, lock)
 	local char = player.Character or player.CharacterAdded:Wait()
 	local humanoid = char:WaitForChild("Humanoid")
 
-	-- نوقف الاتصال القديم
 	if currentConnection then
 		currentConnection:Disconnect()
 		currentConnection = nil
 	end
 
-	-- نغير السرعة الآن
 	humanoid.WalkSpeed = speed
 
-	-- إذا نريد تثبيت السرعة
 	if lock then
 		currentConnection = humanoid:GetPropertyChangedSignal("WalkSpeed"):Connect(function()
 			humanoid.WalkSpeed = speed
@@ -25,7 +22,7 @@ local function setWalkSpeed(speed, lock)
 	end
 end
 
--- نصنع الزر
+-- إنشاء الـ GUI
 local gui = Instance.new("ScreenGui", playerGui)
 gui.Name = "BoostGUI"
 
@@ -43,8 +40,24 @@ button.Active = true
 local corner = Instance.new("UICorner", button)
 corner.CornerRadius = UDim.new(1, 0)
 
--- منطق الضغط على الزر
+-- زر صغير (×) لإغلاق الزر الكبير
+local closeBtn = Instance.new("TextButton", button)
+closeBtn.Size = UDim2.new(0, 20, 0, 20)
+closeBtn.Position = UDim2.new(1, -22, 0, 2)
+closeBtn.Text = "×"
+closeBtn.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+closeBtn.TextColor3 = Color3.new(1, 1, 1)
+closeBtn.Font = Enum.Font.SourceSansBold
+closeBtn.TextSize = 16
+closeBtn.BorderSizePixel = 0
+
+local closeCorner = Instance.new("UICorner", closeBtn)
+closeCorner.CornerRadius = UDim.new(1, 0)
+
+-- متغير لحالة الـ Boost
 local boosted = false
+
+-- عند الضغط على زر Boost
 button.MouseButton1Click:Connect(function()
 	boosted = not boosted
 
@@ -55,6 +68,13 @@ button.MouseButton1Click:Connect(function()
 	else
 		button.Text = "Boost OFF"
 		button.BackgroundColor3 = Color3.fromRGB(139, 0, 0)
-		setWalkSpeed(16, false) -- هنا نرجعها 16 بدون تثبيت
+		setWalkSpeed(16, false)
 	end
+end)
+
+-- عند الضغط على زر ×
+closeBtn.MouseButton1Click:Connect(function()
+	button.Visible = false
+	boosted = false
+	setWalkSpeed(16, false)
 end)
